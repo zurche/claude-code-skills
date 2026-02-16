@@ -10,7 +10,6 @@ flowchart TD
 
     CP_VERSION{{"✋ Version Recommendation<br>MAJOR / MINOR / PATCH"}}
     CP_VERSION -->|Approved| UPDATE
-    CP_VERSION -->|Override| CP_VERSION
 
     UPDATE["Update build.gradle.kts<br>versionCode +1 · versionName"] --> NOTES
 
