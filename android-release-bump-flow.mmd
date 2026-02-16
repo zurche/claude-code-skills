@@ -1,38 +1,38 @@
 flowchart TD
     START([🚀 Start Release]) --> PREFLIGHT
 
-    PREFLIGHT[Pre-flight Checks\nmain branch · clean tree\nkeystore.properties] -->|Fail| ABORT([❌ Abort])
+    PREFLIGHT["Pre-flight Checks<br>main branch · clean tree<br>keystore.properties"] -->|Fail| ABORT([❌ Abort])
     PREFLIGHT -->|Pass| DISCOVER
 
-    DISCOVER[Discover App Name\ntags → gradle → ask user] --> ANALYZE
+    DISCOVER["Discover App Name<br>tags → gradle → ask user"] --> ANALYZE
 
-    ANALYZE[Analyze Commits\nsince last tag] --> CP_VERSION
+    ANALYZE["Analyze Commits<br>since last tag"] --> CP_VERSION
 
-    CP_VERSION{{✋ Version Recommendation\nMAJOR / MINOR / PATCH}}
+    CP_VERSION{{"✋ Version Recommendation<br>MAJOR / MINOR / PATCH"}}
     CP_VERSION -->|Approved| UPDATE
     CP_VERSION -->|Override| CP_VERSION
 
-    UPDATE[Update build.gradle.kts\nversionCode +1 · versionName] --> NOTES
+    UPDATE["Update build.gradle.kts<br>versionCode +1 · versionName"] --> NOTES
 
-    NOTES[Generate Release Notes\nauto-detect locales · 500 char limit] --> CP_NOTES
+    NOTES["Generate Release Notes<br>auto-detect locales · 500 char limit"] --> CP_NOTES
 
     CP_NOTES{{✋ Review Release Notes}}
     CP_NOTES -->|Approved| VERIFY
     CP_NOTES -->|Edit| NOTES
 
-    VERIFY[Pre-commit Verification\nbuild · lint · test] -->|Fail| ABORT_VERIFY([❌ Fix & retry])
+    VERIFY["Pre-commit Verification<br>build · lint · test"] -->|Fail| ABORT_VERIFY([❌ Fix & retry])
     VERIFY -->|Pass| COMMIT
 
-    COMMIT[Commit & Tag\nversion bump + git tag] --> CP_PUSH
+    COMMIT["Commit & Tag<br>version bump + git tag"] --> CP_PUSH
 
     CP_PUSH{{✋ Confirm Push}}
     CP_PUSH -->|Approved| PUSH
 
-    PUSH[Push to origin/main\n+ push tag] --> BUNDLE
+    PUSH["Push to origin/main<br>+ push tag"] --> BUNDLE
 
     BUNDLE[Build Signed Bundle\ncopyReleaseBundle] --> PLAY_CHECK
 
-    PLAY_CHECK{Upload to\nPlay Console?}
+    PLAY_CHECK{"Upload to<br>Play Console?"}
     PLAY_CHECK -->|No| REPORT
     PLAY_CHECK -->|Yes| CP_UPLOAD
 
@@ -40,7 +40,7 @@ flowchart TD
     CP_UPLOAD -->|Approved| UPLOAD
     CP_UPLOAD -->|Skip| REPORT
 
-    UPLOAD[Publish to\nInternal Testing] --> REPORT
+    UPLOAD["Publish to<br>Internal Testing"] --> REPORT
 
     REPORT[/📋 Completion Report/] --> DONE([✅ Done])
 
