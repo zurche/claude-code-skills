@@ -1,142 +1,55 @@
 flowchart TD
     START([🚀 Start Release]) --> PREFLIGHT
 
-    %% ── Pre-flight ──
-    subgraph PREFLIGHT_BOX["1 · Pre-flight Checks"]
-        PREFLIGHT{On main?\nClean tree?}
-        PREFLIGHT -->|No| ABORT_DIRTY([❌ Abort: dirty tree / wrong branch])
-        PREFLIGHT -->|Yes| CHECK_KEYSTORE{keystore.properties\nexists?}
-        CHECK_KEYSTORE -->|No| ABORT_KS([❌ Abort: missing keystore config])
-        CHECK_KEYSTORE -->|Yes| DISCOVER_APP
-    end
+    PREFLIGHT[Pre-flight Checks\nmain branch · clean tree\nkeystore.properties] -->|Fail| ABORT([❌ Abort])
+    PREFLIGHT -->|Pass| DISCOVER
 
-    %% ── Discover app name ──
-    subgraph DISCOVER_BOX["2 · Discover App Name"]
-        DISCOVER_APP[Resolve app-name] --> DISCOVER_TAGS{Existing\ngit tags?}
-        DISCOVER_TAGS -->|Yes| USE_TAG[Extract from tag pattern]
-        DISCOVER_TAGS -->|No| DISCOVER_GRADLE{settings.gradle.kts\nrootProject.name?}
-        DISCOVER_GRADLE -->|Yes| USE_GRADLE[Use rootProject.name]
-        DISCOVER_GRADLE -->|No| DISCOVER_NS{build.gradle.kts\nnamespace / appId?}
-        DISCOVER_NS -->|Yes| USE_NS[Use last segment]
-        DISCOVER_NS -->|No| ASK_NAME[Ask user for app name]
-        USE_TAG --> ANALYZE
-        USE_GRADLE --> ANALYZE
-        USE_NS --> ANALYZE
-        ASK_NAME --> ANALYZE
-    end
+    DISCOVER[Discover App Name\ntags → gradle → ask user] --> ANALYZE
 
-    %% ── Analyze changes ──
-    subgraph ANALYZE_BOX["3 · Analyze Changes"]
-        ANALYZE[Get latest release tag\n& diff commits] --> HAS_TAGS{Prior tags\nexist?}
-        HAS_TAGS -->|No| FIRST_RELEASE[First release:\ndefault v1.0.0]
-        HAS_TAGS -->|Yes| SCAN_COMMITS[Scan commit messages\nfor keywords]
-        FIRST_RELEASE --> CP_VERSION
-        SCAN_COMMITS --> HAS_KEYWORDS{Conventional\nprefixes found?}
-        HAS_KEYWORDS -->|Yes| CATEGORIZE[Categorize:\nMAJOR / MINOR / PATCH]
-        HAS_KEYWORDS -->|No| DIFFSTAT[Fallback: diffstat analysis\n& file type heuristics]
-        CATEGORIZE --> CP_VERSION
-        DIFFSTAT --> CP_VERSION
-    end
+    ANALYZE[Analyze Commits\nsince last tag] --> CP_VERSION
 
-    %% ── Checkpoint: Version ──
-    CP_VERSION{{✋ CHECKPOINT\nPresent version recommendation\nWait for user confirmation}}
+    CP_VERSION{{✋ Version Recommendation\nMAJOR / MINOR / PATCH}}
+    CP_VERSION -->|Approved| UPDATE
     CP_VERSION -->|Override| CP_VERSION
-    CP_VERSION -->|Approved| UPDATE_GRADLE
 
-    %% ── Update build.gradle ──
-    subgraph UPDATE_BOX["4 · Update Version"]
-        UPDATE_GRADLE[Update app/build.gradle.kts\nversionCode +1\nversionName = X.Y.Z]
-    end
-    UPDATE_GRADLE --> GEN_NOTES
+    UPDATE[Update build.gradle.kts\nversionCode +1 · versionName] --> NOTES
 
-    %% ── Generate release notes ──
-    subgraph NOTES_BOX["5 · Generate Release Notes"]
-        GEN_NOTES[Scan values* dirs\nfor supported locales] --> WRITE_NOTES[Generate localized\nrelease notes\nmax 500 chars each]
-    end
-    WRITE_NOTES --> CP_NOTES
+    NOTES[Generate Release Notes\nauto-detect locales · 500 char limit] --> CP_NOTES
 
-    %% ── Checkpoint: Release notes ──
-    CP_NOTES{{✋ CHECKPOINT\nShow release notes\nfor primary locale\nWait for user confirmation}}
-    CP_NOTES -->|Edit requested| WRITE_NOTES
-    CP_NOTES -->|Approved| COMMIT_NOTES
+    CP_NOTES{{✋ Review Release Notes}}
+    CP_NOTES -->|Approved| VERIFY
+    CP_NOTES -->|Edit| NOTES
 
-    COMMIT_NOTES[git add & commit\nrelease notes] --> VERIFICATION
+    VERIFY[Pre-commit Verification\nbuild · lint · test] -->|Fail| ABORT_VERIFY([❌ Fix & retry])
+    VERIFY -->|Pass| COMMIT
 
-    %% ── Pre-commit verification ──
-    subgraph VERIFY_BOX["6 · Pre-commit Verification"]
-        VERIFICATION[assembleDebug] --> BUILD_OK{Build\npassed?}
-        BUILD_OK -->|No| CLEAN_RETRY[gradlew clean\n& retry once]
-        CLEAN_RETRY --> BUILD_OK2{Retry\npassed?}
-        BUILD_OK2 -->|No| ABORT_BUILD([❌ Build failed — report & stop])
-        BUILD_OK2 -->|Yes| DETEKT
-        BUILD_OK -->|Yes| DETEKT[detekt]
-        DETEKT --> DETEKT_OK{Lint\npassed?}
-        DETEKT_OK -->|No| ABORT_LINT([❌ Lint failed — ask user])
-        DETEKT_OK -->|Yes| TESTS[test]
-        TESTS --> TESTS_OK{Tests\npassed?}
-        TESTS_OK -->|No| ABORT_TESTS([❌ Tests failed — ask user])
-        TESTS_OK -->|Yes| COMMIT_TAG
-    end
+    COMMIT[Commit & Tag\nversion bump + git tag] --> CP_PUSH
 
-    %% ── Commit & tag ──
-    subgraph COMMIT_BOX["7 · Commit & Tag"]
-        COMMIT_TAG[git commit version bump] --> TAG_CHECK{Tag already\nexists?}
-        TAG_CHECK -->|Yes| TAG_CONFLICT([⚠️ Tag exists — suggest next version])
-        TAG_CHECK -->|No| CREATE_TAG[git tag v‹app›-X.Y.Z]
-    end
-    TAG_CONFLICT --> CP_VERSION
-    CREATE_TAG --> CP_PUSH
-
-    %% ── Checkpoint: Push ──
-    CP_PUSH{{✋ CHECKPOINT\nShow commit summary,\ntag name, target branch\nWait for user confirmation}}
-    CP_PUSH -->|Rejected| COMMIT_TAG
+    CP_PUSH{{✋ Confirm Push}}
     CP_PUSH -->|Approved| PUSH
 
-    %% ── Push ──
-    subgraph PUSH_BOX["8 · Push"]
-        PUSH[git push origin main\ngit push tag] --> PUSH_OK{Push\nsucceeded?}
-        PUSH_OK -->|No| PUSH_FAIL([⚠️ Push failed — report conflict\ndo NOT force-push])
-        PUSH_OK -->|Yes| BUILD_BUNDLE
-    end
+    PUSH[Push to origin/main\n+ push tag] --> BUNDLE
 
-    %% ── Build bundle ──
-    subgraph BUNDLE_BOX["9 · Build Signed Bundle"]
-        BUILD_BUNDLE[gradlew :app:copyReleaseBundle] --> REPORT_PATH[Report bundle location\napp/build/release/‹app›-vX.Y.Z.aab]
-    end
-    REPORT_PATH --> CHECK_PLAY
+    BUNDLE[Build Signed Bundle\ncopyReleaseBundle] --> PLAY_CHECK
 
-    %% ── Optional Play Console upload ──
-    CHECK_PLAY{play-api-key.json\nexists?}
-    CHECK_PLAY -->|No| SKIP_UPLOAD[Skip upload\nbundle available for manual upload]
-    CHECK_PLAY -->|Yes| CP_UPLOAD
+    PLAY_CHECK{Upload to\nPlay Console?}
+    PLAY_CHECK -->|No| REPORT
+    PLAY_CHECK -->|Yes| CP_UPLOAD
 
-    %% ── Checkpoint: Upload ──
-    CP_UPLOAD{{✋ CHECKPOINT\nBundle path, target track,\nversion to upload\nWait for user confirmation}}
-    CP_UPLOAD -->|Skip| SKIP_UPLOAD
+    CP_UPLOAD{{✋ Confirm Upload}}
     CP_UPLOAD -->|Approved| UPLOAD
+    CP_UPLOAD -->|Skip| REPORT
 
-    subgraph UPLOAD_BOX["10 · Play Console Upload"]
-        UPLOAD[gradlew publishReleaseBundle] --> UPLOAD_OK{Upload\nsucceeded?}
-        UPLOAD_OK -->|No| UPLOAD_FAIL([⚠️ Upload failed\nbundle still at build/release/])
-        UPLOAD_OK -->|Yes| UPLOAD_DONE[Uploaded to Internal Testing ✅]
-    end
+    UPLOAD[Publish to\nInternal Testing] --> REPORT
 
-    %% ── Completion report ──
-    SKIP_UPLOAD --> REPORT
-    UPLOAD_DONE --> REPORT
-    UPLOAD_FAIL --> REPORT
+    REPORT[/📋 Completion Report/] --> DONE([✅ Done])
 
-    REPORT[/📋 Completion Report\nOld → New version\nBump type · Tag · Locales\nBundle path · Push status\nUpload status/]
-
-    REPORT --> DONE([✅ Release Complete])
-
-    %% ── Styling ──
     classDef checkpoint fill:#FFF3CD,stroke:#FFC107,stroke-width:2px,color:#856404
     classDef abort fill:#F8D7DA,stroke:#DC3545,stroke-width:2px,color:#721C24
     classDef success fill:#D4EDDA,stroke:#28A745,stroke-width:2px,color:#155724
     classDef report fill:#D1ECF1,stroke:#17A2B8,stroke-width:2px,color:#0C5460
 
     class CP_VERSION,CP_NOTES,CP_PUSH,CP_UPLOAD checkpoint
-    class ABORT_DIRTY,ABORT_KS,ABORT_BUILD,ABORT_LINT,ABORT_TESTS abort
-    class DONE,UPLOAD_DONE success
+    class ABORT,ABORT_VERIFY abort
+    class DONE success
     class REPORT report
