@@ -29,7 +29,7 @@ flowchart TD
 
     PUSH["Push to origin/main<br>+ push tag"] --> BUNDLE
 
-    BUNDLE[Build Signed Bundle\ncopyReleaseBundle] --> PLAY_CHECK
+    BUNDLE[Build Signed Bundle<br>copyReleaseBundle] --> PLAY_CHECK
 
     PLAY_CHECK{"Upload to<br>Play Console?"}
     PLAY_CHECK -->|No| REPORT
