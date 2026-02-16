@@ -35,10 +35,24 @@ This skill automates the complete Android release workflow:
 7. **Commit and tag**:
    - Commit message: `Updating Release version to X.Y.Z`
    - Tag: `v<app-name>-X.Y.Z` (configurable prefix)
+   - **Note**: The release notes commit (step 5) is intentionally separate from the version bump commit (step 7). The git tag is applied to the version bump commit only. This keeps release notes changes isolated for cleaner history.
 8. **Push to origin/main** and push the tag.
 9. **Build signed bundle**: `./gradlew :app:copyReleaseBundle`
 10. **Report bundle location**: `app/build/release/<app-name>-vX.Y.Z-release.aab`
 11. **Upload to Internal Testing track**: Push bundle with embedded release notes to Google Play Console (optional, requires confirmation)
+
+## Confirmation Checkpoints
+
+The agent MUST pause and wait for explicit user confirmation at these points. Do NOT proceed autonomously past any checkpoint.
+
+| Checkpoint | When | What to show the user |
+|-----------|------|-----------------------|
+| **Version recommendation** | After analyzing commits (step 2-3) | Recommended bump type, reasoning, old → new version |
+| **Release notes review** | After generating notes, before committing (step 5) | Full release notes for at least the primary locale |
+| **Pre-push** | After commit + tag, before `git push` (step 8) | Summary of commit, tag name, target branch |
+| **Play Console upload** | Before `publishReleaseBundle` (step 11) | Bundle path, target track, version being uploaded |
+
+If the user rejects at any checkpoint, ask what they want to change. Do not restart the entire workflow — resume from the relevant step.
 
 ## Versioning Rules & Intelligent Bumping
 
@@ -82,6 +96,20 @@ The skill analyzes commits since the last release to recommend the appropriate v
 4. **Recommend version** based on most critical change found
 5. **Allow override** - User can specify major/minor/patch if recommendation differs from intent
 
+### Handling Ambiguous Commits
+
+Not all repositories use conventional commit prefixes. When commits lack clear keywords:
+
+1. **Check the diffstat**: Run `git diff --stat <last-tag>..HEAD` to gauge scope
+   - 1-5 files changed, small diffs → likely PATCH
+   - 5-20 files changed or new files added → likely MINOR
+   - 20+ files or major structural changes → consider MAJOR
+2. **Look at file types changed**:
+   - Only test/doc files → PATCH
+   - New source files in feature directories → MINOR
+   - Changes to core architecture files (DI, navigation, base classes) → possibly MAJOR
+3. **When still uncertain**: Default to PATCH and present your reasoning. Explicitly tell the user: "Commits don't follow conventional prefixes, so I'm defaulting to PATCH. Override if this includes user-facing features."
+
 ### Examples
 
 | Scenario | Last Release | Commits | Recommendation |
@@ -123,6 +151,18 @@ breaking: Change notification permission flow
 
 ## Configuration
 
+### Discovering `<app-name>`
+
+The skill uses `<app-name>` in tags, bundle filenames, and commit messages. The agent must resolve this dynamically — never hardcode or guess it.
+
+**Discovery order** (use the first that succeeds):
+1. **Existing git tags**: Run `git tag --list 'v*'` and extract the app name from the most recent tag pattern (e.g., `vmy-app-1.4.1` → `my-app`)
+2. **`settings.gradle.kts`**: Read `rootProject.name` (e.g., `rootProject.name = "my-app"`)
+3. **`app/build.gradle.kts`**: Read `namespace` or `applicationId` and use the last segment (e.g., `com.example.myapp` → `myapp`)
+4. **Ask the user**: If none of the above yields a clear name, ask: "What app name should I use for tags and bundle filenames?"
+
+Cache the resolved name for the duration of the workflow. Do not re-discover mid-release.
+
 ### Naming Convention
 
 Customize version references to match your project:
@@ -146,6 +186,8 @@ storePassword=YOUR_STORE_PASSWORD
 keyAlias=your-app-key
 keyPassword=YOUR_KEY_PASSWORD
 ```
+
+**Security**: The agent MUST only check that `keystore.properties` exists (`test -f keystore.properties`). NEVER read, log, or display its contents — it contains signing credentials. The same applies to `play-api-key.json`.
 
 ### Build Configuration
 
@@ -347,6 +389,28 @@ app/build/release/<app-name>-vX.Y.Z-release.aab
 
 The bundle naming is automatically handled by the `copyReleaseBundle` task in `app/build.gradle.kts`.
 
+## Completion Report
+
+After the workflow finishes (whether fully or partially), present a summary to the user:
+
+```
+## Release Summary
+
+| Field | Value |
+|-------|-------|
+| Previous version | 1.4.1 (versionCode 42) |
+| New version | 1.5.0 (versionCode 43) |
+| Bump type | MINOR |
+| Git tag | v<app-name>-1.5.0 |
+| Commits included | 12 commits since v<app-name>-1.4.1 |
+| Release notes | Generated for 5 locales (en-US, de-DE, es-ES, fr-FR, ja-JP) |
+| Bundle path | app/build/release/<app-name>-v1.5.0-release.aab |
+| Pushed to remote | Yes — origin/main |
+| Play Console upload | Uploaded to Internal Testing / Skipped / Failed (reason) |
+```
+
+If any step was skipped or failed, note it in the summary so the user knows exactly where things stand.
+
 ## Google Play Console Upload
 
 ### Optional Internal Testing Upload
@@ -409,6 +473,42 @@ If automated upload is not configured, you can manually upload the bundle from `
 - Never skip pre-commit verification
 - Never force-push or amend already-pushed commits
 - Never release with uncommitted changes
+
+## Error Recovery
+
+When a step fails, follow these recovery paths instead of aborting immediately:
+
+### Gradle Build Failure (`assembleDebug`)
+1. Run `./gradlew clean` and retry the build once
+2. If it fails again, report the build error output to the user and stop
+3. Do NOT proceed to commit or tag — the release is blocked
+
+### Gradle Detekt / Test Failure
+1. Report which checks failed with the relevant output
+2. Do NOT retry automatically — linting and test failures require code changes
+3. Ask the user how they want to proceed (fix issues or skip this release)
+
+### Git Tag Already Exists
+1. If the computed tag (e.g., `v<app-name>-1.5.0`) already exists, do NOT overwrite it
+2. Inform the user: "Tag `vX.Y.Z` already exists. This likely means the version was already released."
+3. Suggest incrementing to the next version (e.g., `1.5.1`) and ask the user to confirm
+
+### Git Push Failure
+1. Check if the failure is due to diverged branches (`git status` / `git log --oneline origin/main..HEAD`)
+2. Report the conflict to the user — do NOT force-push or rebase automatically
+3. The local commit and tag are still intact; the user can resolve and retry manually
+
+### `publishReleaseBundle` Failure (Play Console Upload)
+1. Check if `play-api-key.json` exists and is readable
+2. If auth error: remind the user to verify service account permissions in Google Play Console
+3. If network error: ask the user if they want to retry or upload manually
+4. The signed bundle is still available at `app/build/release/` for manual upload
+
+### First Release (No Prior Tags)
+1. If `git describe --tags --abbrev=0` fails (no tags found), this is a first release
+2. Default to version `1.0.0` with `versionCode = 1`
+3. Present this to the user: "No previous release tags found. Starting at v1.0.0. Override?"
+4. For release notes, use all commits on the branch (or since initial commit) as the changelog source
 
 ## Usage as a Claude Code Skill
 
