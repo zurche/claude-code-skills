@@ -1,186 +1,92 @@
-# Claude Code Skills Collection
+# CLI Agent Skills Collection
 
-A curated collection of production-ready Claude Code skills for software development, automation, and productivity.
+Reusable skills for CLI coding agents. Each skill is a self-contained markdown document that any agent supporting custom instructions can pick up and execute.
 
-## Overview
-
-This repository contains reusable skills that extend Claude Code's capabilities across various development workflows. Each skill is battle-tested in real projects and designed to be easily customized for your specific needs.
+Tested with [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [OpenAI Codex CLI](https://github.com/openai/codex). Should work with any CLI agent that supports loading custom instruction files.
 
 ## Available Skills
 
-### 🚀 [Android Release Bump](./android-release-bump.md)
+### [Android Release Bump](./android-release-bump.md)
 
-Comprehensive release automation for Android projects:
+Complete release automation for Android projects:
 
-- **Intelligent Semantic Versioning**: Analyzes git commits to recommend MAJOR/MINOR/PATCH version bumps
-- **Automated Release Notes**: Generates localized release notes for all supported languages
-- **Pre-commit Verification**: Runs build, linting, and tests before committing
-- **Google Play Integration**: Optionally uploads to Internal Testing track
-- **Multi-locale Support**: Auto-detects app locales and generates appropriate release notes
-
-**Perfect for**: Android developers releasing apps to Google Play Store
-
----
-
-## Coming Soon
-
-More skills will be added to this collection covering:
-- **iOS Release Management**: Similar automation for iOS/Xcode projects
-- **Code Review Automation**: PR review checklist generation
-- **Documentation Generation**: Auto-generate docs from code
-- **Test Coverage Analysis**: Coverage reports and improvement suggestions
-- **Dependency Management**: Automated dependency updates and security audits
+- Intelligent semantic versioning from git commit analysis
+- Multi-locale release notes generation
+- Pre-commit verification (build, lint, tests)
+- Signed bundle building
+- Optional Google Play Console upload to Internal Testing
 
 ## Installation
 
-### Using as Claude Code Skills
+Skills are plain markdown files. Copy them into wherever your agent reads custom instructions from.
 
-Each skill can be installed independently:
+### Claude Code
 
-1. **Navigate to your project**:
-   ```bash
-   cd your-project
-   ```
+Claude Code loads skills from `.claude/skills/*/SKILL.md` inside your project:
 
-2. **Copy the skill file** to your Claude skills directory:
-   ```bash
-   mkdir -p .claude/skills/<skill-name>
-   cp <skill-file>.md .claude/skills/<skill-name>/SKILL.md
-   ```
-
-3. **Customize the skill** for your project (tag naming, commands, etc.)
-
-4. **Invoke in Claude Code**:
-   ```
-   /<skill-name>
-   ```
-   Or describe what you want: "bump the release version"
-
-## Skill Structure
-
-Each skill follows this format:
-
-```markdown
-# Skill Name
-
-Brief description and trigger phrases.
-
-## Overview
-What the skill does
-
-## Workflow
-Step-by-step process
-
-## Configuration
-How to customize
-
-## Usage
-How to use the skill
-
-## Requirements
-What you need
-
-## Examples
-Real-world usage
+```bash
+cd your-android-project
+mkdir -p .claude/skills/android-release-bump
+cp /path/to/android-release-bump.md .claude/skills/android-release-bump/SKILL.md
 ```
+
+Invoke with `/android-release-bump` or describe what you want: "bump the release version".
+
+### OpenAI Codex CLI
+
+Codex reads instructions from `AGENTS.md` at the project root (or in subdirectories for scoped instructions):
+
+```bash
+cd your-android-project
+cp /path/to/android-release-bump.md AGENTS.md
+```
+
+Then ask Codex to "bump the release version" or "cut a new release".
+
+If you already have an `AGENTS.md`, append the skill content or reference it:
+
+```bash
+echo -e "\n\n$(cat /path/to/android-release-bump.md)" >> AGENTS.md
+```
+
+### Other Agents
+
+Most CLI agents support some form of custom instruction loading. Common patterns:
+
+| Agent | Instruction file | Notes |
+|-------|-----------------|-------|
+| Claude Code | `.claude/skills/<name>/SKILL.md` | Auto-loaded, invocable via `/<name>` |
+| Codex CLI | `AGENTS.md` (project root) | Loaded automatically on startup |
+| Cursor | `.cursor/rules/*.md` | Place skill as a rule file |
+| Aider | `.aider.conf.yml` `read:` field | Reference the skill markdown file |
+| Generic | Project README or system prompt | Paste skill content into agent context |
+
+The skill files are agent-agnostic markdown — no special syntax required. If your agent can read a markdown file as instructions, it can use these skills.
+
+## Customization
+
+After copying a skill into your project, you may want to adjust:
+
+- **Tag naming convention**: Default is `v<app-name>-X.Y.Z`. Some projects prefer `v1.2.3` or `release/1.2.3`.
+- **Verification commands**: Default is `./gradlew assembleDebug && ./gradlew detekt && ./gradlew test`. Swap `detekt` for `lint` or add your own checks.
+- **Bundle task name**: Default is `copyReleaseBundle`. Adjust if your Gradle setup differs.
+- **Commit message format**: Default is `Updating Release version to X.Y.Z`.
 
 ## Contributing
 
-Contributions are welcome! This collection aims to be a community resource for Claude Code users.
-
-### How to Contribute
-
-1. **Fork this repository**
-2. **Add your skill**:
-   - Create a new `.md` file with clear documentation
-   - Follow the existing skill structure
-   - Include configuration instructions
-   - Add real-world examples
-3. **Test thoroughly** in actual projects
-4. **Submit a pull request** with:
-   - Clear description of what the skill does
-   - Any prerequisites or setup requirements
-   - Example usage
+1. Fork this repository
+2. Add your skill as a `.md` file at the repo root
+3. Test with at least two different CLI agents
+4. Submit a PR with a description of what the skill does
 
 ### Skill Guidelines
 
-- **Generic**: Remove project-specific references
-- **Documented**: Include setup and configuration instructions
-- **Tested**: Verify it works in multiple scenarios
-- **Customizable**: Use placeholders for project-specific values
-- **Safe**: Include guardrails and validation checks
-
-## Best Practices
-
-### Organizing Skills
-
-```
-.claude/
-└── skills/
-    ├── android-release/
-    │   └── SKILL.md
-    ├── code-review/
-    │   └── SKILL.md
-    └── test-coverage/
-        └── SKILL.md
-```
-
-### Customization
-
-Each skill includes placeholders for project-specific values:
-- `<app-name>`: Your application name
-- `<tag-format>`: Your preferred git tag format
-- `<verification-commands>`: Your build/test commands
-
-### Security
-
-- Never commit credentials (`keystore.properties`, API keys, etc.)
-- Use `.gitignore` to exclude sensitive files
-- Store secrets in secure locations outside version control
-
-## Use Cases
-
-### Development Workflows
-- Release management and versioning
-- Code review automation
-- Test coverage tracking
-- Documentation generation
-
-### DevOps & CI/CD
-- Automated deployments
-- Build verification
-- Release note generation
-- Change log automation
-
-### Project Management
-- Sprint planning assistance
-- Issue triaging
-- PR review checklists
-- Status report generation
-
-## Resources
-
-- [Claude Code Documentation](https://docs.anthropic.com/claude/docs/claude-code)
-- [Semantic Versioning](https://semver.org/)
-- [Conventional Commits](https://www.conventionalcommits.org/)
-
-## Support
-
-For issues or questions:
-- **Skill-specific issues**: Check the skill's documentation
-- **General questions**: Open an issue in this repository
-- **Feature requests**: Submit an issue with the `enhancement` label
+- **Agent-agnostic**: Write for any agent, not just one tool. Use "the agent" instead of "Claude" or "Codex".
+- **Self-contained**: A single markdown file should have everything the agent needs.
+- **Safe**: Include confirmation checkpoints for destructive or irreversible actions.
+- **Generic**: Use placeholders instead of hardcoded project-specific values.
+- **Tested**: Verify in real projects before submitting.
 
 ## License
 
-MIT License - Feel free to use, modify, and distribute these skills in your projects.
-
-## Credits
-
-Created for use with [Claude Code](https://claude.ai/code) by Anthropic.
-
-Skills developed and tested in production software projects.
-
----
-
-**Note**: These skills are provided as-is. Always test in your specific environment before relying on them for production use.
+MIT
