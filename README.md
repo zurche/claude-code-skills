@@ -27,7 +27,7 @@ Claude Code loads skills from `.claude/skills/*/SKILL.md` inside your project:
 ```bash
 cd your-android-project
 mkdir -p .claude/skills/android-release-bump
-cp /path/to/android-release-bump.md .claude/skills/android-release-bump/SKILL.md
+cp /path/to/agent-skills/skills/android-release-bump.md .claude/skills/android-release-bump/SKILL.md
 ```
 
 Invoke with `/android-release-bump` or describe what you want: "bump the release version".
@@ -38,7 +38,7 @@ Codex reads instructions from `AGENTS.md` at the project root (or in subdirector
 
 ```bash
 cd your-android-project
-cp /path/to/android-release-bump.md AGENTS.md
+cp /path/to/agent-skills/skills/android-release-bump.md AGENTS.md
 ```
 
 Then ask Codex to "bump the release version" or "cut a new release".
@@ -46,7 +46,10 @@ Then ask Codex to "bump the release version" or "cut a new release".
 If you already have an `AGENTS.md`, append the skill content or reference it:
 
 ```bash
-echo -e "\n\n$(cat /path/to/android-release-bump.md)" >> AGENTS.md
+{
+  printf '\n\n'
+  cat /path/to/agent-skills/skills/android-release-bump.md
+} >> AGENTS.md
 ```
 
 ### Other Agents
