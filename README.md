@@ -6,7 +6,7 @@ Tested with [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [O
 
 ## Available Skills
 
-### [Android Release Bump](./android-release-bump.md)
+### [Android Release Bump](./skills/android-release-bump.md)
 
 Complete release automation for Android projects:
 
@@ -75,7 +75,7 @@ After copying a skill into your project, you may want to adjust:
 ## Contributing
 
 1. Fork this repository
-2. Add your skill as a `.md` file at the repo root
+2. Add your skill as a `.md` file under `skills/`
 3. Test with at least two different CLI agents
 4. Submit a PR with a description of what the skill does
 
