@@ -34,18 +34,28 @@ Invoke with `/android-release-bump` or describe what you want: "bump the release
 
 ### OpenAI Codex CLI
 
-Codex reads instructions from `AGENTS.md` at the project root (or in subdirectories for scoped instructions).
-
-If you do **not** already have an `AGENTS.md`, create it from the skill file:
+For reusable personal skills (shown in Codex Skills UI), install under `$CODEX_HOME/skills/<skill-id>/SKILL.md`:
 
 ```bash
-cd your-android-project
-cp /path/to/agent-skills/skills/android-release-bump.md AGENTS.md
+SKILL_ID="android-release-bump"
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+
+mkdir -p "$CODEX_HOME/skills/$SKILL_ID"
+{
+  cat <<'EOF'
+---
+name: android-release-bump
+description: Bump Android release version, update versionName/versionCode, commit, tag, push, and build release bundle.
+---
+EOF
+  cat /path/to/agent-skills/skills/android-release-bump.md
+} > "$CODEX_HOME/skills/$SKILL_ID/SKILL.md"
 ```
 
-Then ask Codex to "bump the release version" or "cut a new release".
+Restart Codex (or start a new session), then invoke by asking for the task or naming `android-release-bump`.
 
-If you already have an `AGENTS.md`, append the skill content instead of overwriting:
+If you prefer repo-scoped behavior, use `AGENTS.md` in your project root (or subdirectories for scoped rules).
+If `AGENTS.md` already exists, append instead of overwriting:
 
 ```bash
 {
@@ -61,7 +71,7 @@ Most CLI agents support some form of custom instruction loading. Common patterns
 | Agent | Instruction file | Notes |
 |-------|-----------------|-------|
 | Claude Code | `.claude/skills/<name>/SKILL.md` | Auto-loaded, invocable via `/<name>` |
-| Codex CLI | `AGENTS.md` (project root) | Loaded automatically on startup |
+| Codex CLI | `$CODEX_HOME/skills/<name>/SKILL.md` or `AGENTS.md` | Personal skills appear in Skills UI; `AGENTS.md` is repo-scoped |
 | Cursor | `.cursor/rules/*.md` | Place skill as a rule file |
 | Aider | `.aider.conf.yml` `read:` field | Reference the skill markdown file |
 | Generic | Project README or system prompt | Paste skill content into agent context |
