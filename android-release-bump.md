@@ -11,16 +11,16 @@ Bump release version in app/build.gradle.kts, commit, tag, push to origin/main, 
    - Scan commit messages for change type indicators (see [Commit Analysis Keywords](#commit-analysis-keywords))
    - Recommend appropriate version bump (MAJOR/MINOR/PATCH)
 4. **Present version recommendation** to user with reasoning — user can accept or override.
-5. **Update `app/build.gradle.kts`**: Increment `versionCode` by 1, set `versionName` to new version.
+5. **Update `app/build.gradle.kts`**: Increment `versionCode` by 1 from its current value, set `versionName` to new version.
 6. **Generate release notes** for all auto-detected locales:
    - Scan `app/src/main/res/values*` directories and map to Play Store locale codes
    - Create `app/src/main/play/release-notes/<locale>/default.txt` files (max 500 chars each)
-   - Commit release notes: `git commit -m "feat: Add localized release notes for vX.Y.Z"`
 7. **Run pre-commit verification**: `./gradlew assembleDebug && ./gradlew detekt && ./gradlew test`
 8. **Commit and tag**:
+   - Commit release notes: `git commit -m "feat: Add localized release notes for vX.Y.Z"`
    - `git commit -m "Updating Release version to X.Y.Z"`
    - `git tag -a "v<app-name>-X.Y.Z" -m "v<app-name>-X.Y.Z"`
-   - Note: Release notes commit (step 6) is intentionally separate. The git tag is applied to the version bump commit only.
+   - Note: Release notes commit is intentionally separate. The git tag is applied to the version bump commit only.
 9. **Push** to origin/main and push the tag.
 10. **Build signed bundle**: `./gradlew :app:copyReleaseBundle` — outputs to `app/build/release/<app-name>-vX.Y.Z-release.aab`
 11. **Upload to Internal Testing** (optional): `./gradlew publishReleaseBundle`
@@ -49,7 +49,7 @@ If the user rejects at any checkpoint, ask what they want to change. Do not rest
 | **MINOR** (`1.Y.0`) | New features, noticeable UI/UX enhancements, behavioral improvements (performance, reliability), localization updates | `1.4.1 → 1.5.0` |
 | **PATCH** (`1.0.Z`) | Bug fixes, minor UI tweaks, dependency updates, code refactoring (no user-facing changes), documentation updates. This is the **default**. | `1.4.1 → 1.4.2` |
 
-`versionCode` always increments by +1 regardless of bump type.
+`versionCode` always increments by +1 from the current configured value regardless of bump type. For first release workflows, do not reset or downgrade an existing `versionCode`. If no explicit `versionCode` exists, initialize it to `1`.
 
 ### Analysis Process
 
@@ -270,4 +270,4 @@ Note any skipped or failed steps so the user knows exactly where things stand.
 | **Git tag exists** | Do NOT overwrite. Inform user and suggest incrementing to next version (e.g., `1.5.1`). |
 | **Git push failure** | Check for diverged branches. Report conflict — do NOT force-push. Local commit and tag remain intact. |
 | **Play Console upload** | Check `play-api-key.json` exists. Auth error → verify service account permissions. Network error → offer retry or manual upload. Bundle is still at `app/build/release/`. |
-| **First release (no tags)** | Default to `1.0.0` with `versionCode = 1`. Present to user: "No previous tags found. Starting at v1.0.0. Override?" Use all commits as changelog source. |
+| **First release (no tags)** | Default to `1.0.0`. Set `versionCode` to current configured value +1 (or `1` if no explicit `versionCode` exists). Present to user: "No previous tags found. Starting at v1.0.0. Override?" Use all commits as changelog source. |
