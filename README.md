@@ -6,7 +6,7 @@ Tested with [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [O
 
 ## Available Skills
 
-### [Android Release Bump](./android-release-bump.md)
+### [Android Release Bump](./skills/android-release-bump.md)
 
 Complete release automation for Android projects:
 
@@ -27,26 +27,41 @@ Claude Code loads skills from `.claude/skills/*/SKILL.md` inside your project:
 ```bash
 cd your-android-project
 mkdir -p .claude/skills/android-release-bump
-cp /path/to/android-release-bump.md .claude/skills/android-release-bump/SKILL.md
+cp /path/to/agent-skills/skills/android-release-bump.md .claude/skills/android-release-bump/SKILL.md
 ```
 
 Invoke with `/android-release-bump` or describe what you want: "bump the release version".
 
 ### OpenAI Codex CLI
 
-Codex reads instructions from `AGENTS.md` at the project root (or in subdirectories for scoped instructions):
+For reusable personal skills (shown in Codex Skills UI), install under `$CODEX_HOME/skills/<skill-id>/SKILL.md`:
 
 ```bash
-cd your-android-project
-cp /path/to/android-release-bump.md AGENTS.md
+SKILL_ID="android-release-bump"
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+
+mkdir -p "$CODEX_HOME/skills/$SKILL_ID"
+{
+  cat <<'EOF'
+---
+name: android-release-bump
+description: Bump Android release version, update versionName/versionCode, commit, tag, push, and build release bundle.
+---
+EOF
+  cat /path/to/agent-skills/skills/android-release-bump.md
+} > "$CODEX_HOME/skills/$SKILL_ID/SKILL.md"
 ```
 
-Then ask Codex to "bump the release version" or "cut a new release".
+Restart Codex (or start a new session), then invoke by asking for the task or naming `android-release-bump`.
 
-If you already have an `AGENTS.md`, append the skill content or reference it:
+If you prefer repo-scoped behavior, use `AGENTS.md` in your project root (or subdirectories for scoped rules).
+If `AGENTS.md` already exists, append instead of overwriting:
 
 ```bash
-echo -e "\n\n$(cat /path/to/android-release-bump.md)" >> AGENTS.md
+{
+  printf '\n\n'
+  cat /path/to/agent-skills/skills/android-release-bump.md
+} >> AGENTS.md
 ```
 
 ### Other Agents
@@ -56,7 +71,7 @@ Most CLI agents support some form of custom instruction loading. Common patterns
 | Agent | Instruction file | Notes |
 |-------|-----------------|-------|
 | Claude Code | `.claude/skills/<name>/SKILL.md` | Auto-loaded, invocable via `/<name>` |
-| Codex CLI | `AGENTS.md` (project root) | Loaded automatically on startup |
+| Codex CLI | `$CODEX_HOME/skills/<name>/SKILL.md` or `AGENTS.md` | Personal skills appear in Skills UI; `AGENTS.md` is repo-scoped |
 | Cursor | `.cursor/rules/*.md` | Place skill as a rule file |
 | Aider | `.aider.conf.yml` `read:` field | Reference the skill markdown file |
 | Generic | Project README or system prompt | Paste skill content into agent context |
@@ -75,7 +90,7 @@ After copying a skill into your project, you may want to adjust:
 ## Contributing
 
 1. Fork this repository
-2. Add your skill as a `.md` file at the repo root
+2. Add your skill as a `.md` file under `skills/`
 3. Test with at least two different CLI agents
 4. Submit a PR with a description of what the skill does
 
