@@ -34,7 +34,9 @@ Invoke with `/android-release-bump` or describe what you want: "bump the release
 
 ### OpenAI Codex CLI
 
-Codex reads instructions from `AGENTS.md` at the project root (or in subdirectories for scoped instructions):
+Codex reads instructions from `AGENTS.md` at the project root (or in subdirectories for scoped instructions).
+
+If you do **not** already have an `AGENTS.md`, create it from the skill file:
 
 ```bash
 cd your-android-project
@@ -43,7 +45,7 @@ cp /path/to/agent-skills/skills/android-release-bump.md AGENTS.md
 
 Then ask Codex to "bump the release version" or "cut a new release".
 
-If you already have an `AGENTS.md`, append the skill content or reference it:
+If you already have an `AGENTS.md`, append the skill content instead of overwriting:
 
 ```bash
 {
