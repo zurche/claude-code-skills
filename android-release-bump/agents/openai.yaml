@@ -1,0 +1,3 @@
+display_name: Android Release Bump
+short_description: Bump Android versions, generate localized release notes, and ship signed releases safely.
+default_prompt: Bump this Android app release version, generate Play release notes, run checks, tag it, build the AAB, and optionally upload to Internal Testing.
