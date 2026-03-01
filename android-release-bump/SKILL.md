@@ -12,7 +12,7 @@ description: Bump Android release versions in app/build.gradle.kts, generate loc
 3. Read current `versionName` and `versionCode` from `app/build.gradle.kts`.
 4. Discover the latest release tag and commits since that tag.
 5. Recommend `major`, `minor`, or `patch` using [references/versioning.md](references/versioning.md), then wait for explicit confirmation.
-6. Update `versionName` and increment `versionCode` by `+1`.
+6. Update `versionName` and increment `versionCode` by `+1` from its current configured value.
 7. Detect locales, generate `app/src/main/play/release-notes/<locale>/default.txt`, and enforce limits from [references/locales.md](references/locales.md).
 8. Show release notes for review, then wait for explicit confirmation before committing.
 9. Run verification: `./gradlew assembleDebug && ./gradlew detekt && ./gradlew test`.

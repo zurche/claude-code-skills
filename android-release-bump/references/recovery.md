@@ -11,7 +11,7 @@ Use this file only when a step fails or when printing the final summary.
 | Tag already exists | Do not overwrite. Suggest next version (for example `1.5.1`). |
 | Push fails | Report divergence/conflict. Do not force-push. Keep local commit/tag intact. |
 | Play upload fails | Verify `play-api-key.json` and service account permissions. Offer retry or manual upload. |
-| No previous tags | Recommend `1.0.0`/`versionCode = 1`, show rationale, request confirmation. |
+| No previous tags | Recommend `1.0.0`; set `versionCode` to current configured value +1 (or `1` if no explicit `versionCode` exists), then request confirmation. |
 
 ## Completion Summary Template
 

@@ -10,7 +10,8 @@ Use this file only when deciding or explaining the bump type.
 | `minor` | New features, notable UI/UX improvements, performance/reliability improvements visible to users, or localization expansion | `1.4.1 -> 1.5.0` |
 | `patch` | Bug fixes, minor UI tweaks, maintenance refactors, docs/tests/dependency updates without clear user-facing changes | `1.4.1 -> 1.4.2` |
 
-Always increment `versionCode` by `+1`.
+Always increment `versionCode` by `+1` from the current configured value.
+Never reset or lower an existing `versionCode` in first-release flows.
 
 ## Commit Signal Keywords
 

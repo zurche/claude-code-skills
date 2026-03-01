@@ -39,9 +39,19 @@ mkdir -p .claude/skills
 cp -R /path/to/agent-skills/android-release-bump .claude/skills/
 ```
 
-### Codex
+### OpenAI Codex CLI
 
-Use the skill folder directly in your Codex skills path or copy `SKILL.md` plus `references/` into your project skill directory.
+For reusable personal skills in the Codex Skills UI:
+
+```bash
+SKILL_ID="android-release-bump"
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+
+mkdir -p "$CODEX_HOME/skills"
+cp -R /path/to/agent-skills/android-release-bump "$CODEX_HOME/skills/$SKILL_ID"
+```
+
+For repo-scoped behavior, use `AGENTS.md` in your project and reference or append `android-release-bump/SKILL.md`.
 
 ### Other Agents
 
