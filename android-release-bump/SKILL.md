@@ -19,8 +19,9 @@ description: Bump Android release versions in app/build.gradle.kts, generate loc
 10. Commit release notes and version bump as separate commits, then create annotated tag `v<app-name>-X.Y.Z`.
 11. Show pre-push summary and wait for explicit confirmation before pushing `main` and the tag.
 12. Build signed bundle with `./gradlew :app:copyReleaseBundle`.
-13. If upload is requested, show upload plan and wait for explicit confirmation before `./gradlew publishReleaseBundle`.
-14. Print completion summary format from [references/recovery.md](references/recovery.md).
+13. Create a GitHub release with `gh release create <tag> --title "<tag>" --notes "<en-US release notes>" --target main`.
+14. If upload is requested, show upload plan and wait for explicit confirmation before `./gradlew publishReleaseBundle`.
+15. Print completion summary format from [references/recovery.md](references/recovery.md).
 
 ## Mandatory Confirmations
 
