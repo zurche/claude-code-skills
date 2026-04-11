@@ -45,14 +45,14 @@ Keep every file a plugin needs inside that plugin directory. Claude installs plu
 Claude can consume this repo directly as a Git-backed marketplace.
 
 ```bash
-claude plugin marketplace add zurche/agent-skills
+claude plugin marketplace add https://github.com/zurche/agent-skills.git
 claude plugin install android-release-bump@zurche-shared-plugins
 ```
 
 Inside Claude Code, the equivalent interactive commands are:
 
 ```text
-/plugin marketplace add zurche/agent-skills
+/plugin marketplace add https://github.com/zurche/agent-skills.git
 /plugin install android-release-bump@zurche-shared-plugins
 ```
 
