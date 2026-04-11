@@ -1,0 +1,34 @@
+{
+  "name": "android-release-bump",
+  "version": "1.0.0",
+  "description": "Reusable Android release workflow with version bumps, Play release notes, verification, and optional Play upload.",
+  "author": {
+    "name": "Alejandro Zurcher",
+    "url": "https://github.com/zurche"
+  },
+  "homepage": "https://github.com/zurche/agent-skills",
+  "repository": "https://github.com/zurche/agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "android",
+    "release",
+    "gradle",
+    "play-store"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Android Release Bump",
+    "shortDescription": "Bump Android versions, generate Play release notes, run checks, and ship releases safely.",
+    "longDescription": "Reusable Android release workflow for Gradle apps with version bumps, localized Play release notes, verification, tagging, signed AAB generation, and optional Internal Testing upload.",
+    "developerName": "Alejandro Zurcher",
+    "category": "Release Engineering",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/zurche/agent-skills",
+    "defaultPrompt": [
+      "Bump this Android app release version, generate Play release notes, run checks, tag it, build the AAB, and optionally upload to Internal Testing."
+    ]
+  }
+}

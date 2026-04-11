@@ -1,0 +1,20 @@
+{
+  "name": "zurche-shared-plugins",
+  "interface": {
+    "displayName": "Zurche Shared Plugins"
+  },
+  "plugins": [
+    {
+      "name": "android-release-bump",
+      "source": {
+        "source": "local",
+        "path": "./plugins/android-release-bump"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Release Engineering"
+    }
+  ]
+}
