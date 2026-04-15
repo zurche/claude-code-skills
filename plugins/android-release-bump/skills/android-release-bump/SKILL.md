@@ -1,6 +1,6 @@
 ---
 name: android-release-bump
-description: Bump Android release versions in app/build.gradle.kts, generate localized Play release notes, run verification, commit/tag/push, build a signed AAB, and optionally upload to Google Play Internal Testing. Use when asked to cut a release, bump major/minor/patch (or medium/main), update versionName/versionCode, or publish an Android app release.
+description: Bump Android release versions in app/build.gradle.kts, generate localized Play release notes, run verification, optionally run headless emulator smoke validation, commit/tag/push, build a signed AAB, and optionally upload to Google Play Internal Testing. Use when asked to cut a release, bump major/minor/patch (or medium/main), update versionName/versionCode, validate on an emulator, or publish an Android app release.
 ---
 
 # Android Release Bump
@@ -16,12 +16,13 @@ description: Bump Android release versions in app/build.gradle.kts, generate loc
 7. Detect locales, generate `app/src/main/play/release-notes/<locale>/default.txt`, and enforce limits from [references/locales.md](references/locales.md).
 8. Show release notes for review, then wait for explicit confirmation before committing.
 9. Run verification: `./gradlew assembleDebug && ./gradlew detekt && ./gradlew test`.
-10. Commit release notes and version bump as separate commits, then create annotated tag `v<app-name>-X.Y.Z`.
-11. Show pre-push summary and wait for explicit confirmation before pushing `main` and the tag.
-12. Build signed bundle with `./gradlew :app:copyReleaseBundle`.
-13. Create a GitHub release with `gh release create <tag> --title "<tag>" --notes "<en-US release notes>" --target main`.
-14. If upload is requested, show upload plan and wait for explicit confirmation before `./gradlew publishReleaseBundle`.
-15. Print completion summary format from [references/recovery.md](references/recovery.md).
+10. If device or emulator QA is requested, load [references/emulator-validation.md](references/emulator-validation.md). Prefer a headless AVD with `-no-window` for scripted smoke checks, keep it running while you iterate with `adb`, and only shut it down when validation is complete or the user asks.
+11. Commit release notes and version bump as separate commits, then create annotated tag `v<app-name>-X.Y.Z`.
+12. Show pre-push summary and wait for explicit confirmation before pushing `main` and the tag.
+13. Build signed bundle with `./gradlew :app:copyReleaseBundle`.
+14. Create a GitHub release with `gh release create <tag> --title "<tag>" --notes "<en-US release notes>" --target main`.
+15. If upload is requested, show upload plan and wait for explicit confirmation before `./gradlew publishReleaseBundle`.
+16. Print completion summary format from [references/recovery.md](references/recovery.md).
 
 ## Mandatory Confirmations
 
@@ -36,6 +37,7 @@ description: Bump Android release versions in app/build.gradle.kts, generate loc
 - Never skip verification.
 - Never force-push, rewrite existing tags, or amend pushed commits.
 - Never read, print, or store secret values from `keystore.properties` or `play-api-key.json`.
+- Never claim emulator QA unless the build was actually installed and exercised on a device or AVD.
 - On failure, stop at the safe boundary and follow [references/recovery.md](references/recovery.md).
 
 ## Load Only When Needed
@@ -43,4 +45,5 @@ description: Bump Android release versions in app/build.gradle.kts, generate loc
 - Versioning and ambiguous commit handling: [references/versioning.md](references/versioning.md)
 - Locale mapping and release-note rules: [references/locales.md](references/locales.md)
 - Google Play upload setup and plugin wiring: [references/play-console.md](references/play-console.md)
+- Device and emulator smoke validation: [references/emulator-validation.md](references/emulator-validation.md)
 - Failure matrix and completion summary: [references/recovery.md](references/recovery.md)

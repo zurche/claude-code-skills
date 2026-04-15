@@ -1,7 +1,7 @@
 {
   "name": "android-release-bump",
-  "version": "1.0.0",
-  "description": "Reusable Android release workflow with version bumps, Play release notes, verification, and optional Play upload.",
+  "version": "1.1.0",
+  "description": "Reusable Android release workflow with version bumps, Play release notes, verification, optional headless emulator QA, and optional Play upload.",
   "author": {
     "name": "Alejandro Zurcher",
     "url": "https://github.com/zurche"
@@ -18,8 +18,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Android Release Bump",
-    "shortDescription": "Bump Android versions, generate Play release notes, run checks, and ship releases safely.",
-    "longDescription": "Reusable Android release workflow for Gradle apps with version bumps, localized Play release notes, verification, tagging, signed AAB generation, and optional Internal Testing upload.",
+    "shortDescription": "Bump Android versions, run checks, optionally smoke-test on a headless emulator, and ship safely.",
+    "longDescription": "Reusable Android release workflow for Gradle apps with version bumps, localized Play release notes, verification, optional headless emulator smoke validation, tagging, signed AAB generation, and optional Internal Testing upload.",
     "developerName": "Alejandro Zurcher",
     "category": "Release Engineering",
     "capabilities": [
@@ -28,7 +28,7 @@
     ],
     "websiteURL": "https://github.com/zurche/agent-skills",
     "defaultPrompt": [
-      "Bump this Android app release version, generate Play release notes, run checks, tag it, build the AAB, and optionally upload to Internal Testing."
+      "Bump this Android app release version, generate Play release notes, run checks, optionally validate on a headless emulator, tag it, build the AAB, and optionally upload to Internal Testing."
     ]
   }
 }

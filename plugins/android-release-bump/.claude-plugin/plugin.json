@@ -1,7 +1,7 @@
 {
   "name": "android-release-bump",
-  "version": "1.0.0",
-  "description": "Reusable Android release workflow with version bumps, Play release notes, verification, and optional Play upload.",
+  "version": "1.1.0",
+  "description": "Reusable Android release workflow with version bumps, Play release notes, verification, optional headless emulator QA, and optional Play upload.",
   "author": {
     "name": "Alejandro Zurcher"
   },

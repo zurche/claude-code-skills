@@ -38,7 +38,7 @@ Keep every file a plugin needs inside that plugin directory. Claude installs plu
 
 - Plugin: [plugins/android-release-bump](./plugins/android-release-bump)
 - Skill: [plugins/android-release-bump/skills/android-release-bump/SKILL.md](./plugins/android-release-bump/skills/android-release-bump/SKILL.md)
-- Purpose: bump Android app versions, generate Play release notes, run verification, tag releases, build signed bundles, and optionally upload to Internal Testing
+- Purpose: bump Android app versions, generate Play release notes, run verification, optionally run headless emulator smoke validation, tag releases, build signed bundles, and optionally upload to Internal Testing
 
 ## Install In Claude Code
 

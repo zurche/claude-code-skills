@@ -5,14 +5,14 @@
   },
   "metadata": {
     "description": "Reusable Claude Code plugins and skills for software projects.",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "android-release-bump",
       "source": "./plugins/android-release-bump",
-      "description": "Bump Android app versions, generate Play release notes, run verification, and ship signed releases safely.",
-      "version": "1.0.0",
+      "description": "Bump Android app versions, generate Play release notes, run verification, optionally smoke-test on a headless emulator, and ship signed releases safely.",
+      "version": "1.1.0",
       "author": {
         "name": "Alejandro Zurcher"
       },
